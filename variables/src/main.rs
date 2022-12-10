@@ -30,6 +30,7 @@ fn main() {
     whlie_test();
     array_it_test();
     funny_numbers();
+    test_unwrap();
 
     for fib_it in 0..5{
         let fib_result = fib_counter(fib_it);
@@ -257,3 +258,11 @@ fn fib_counter(fib_n:i32)->i32{
 fn cel_far_converter(temp:f32)->f32{
     temp*1.8 + 32.0
 } 
+
+
+fn test_unwrap(){
+    let mut test_unwrap = Some("123");
+
+    let unwrap_result = test_unwrap.unwrap();
+    println!("something wrapped: {unwrap_result}");
+}
