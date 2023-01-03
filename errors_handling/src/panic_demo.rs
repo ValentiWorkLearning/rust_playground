@@ -29,9 +29,9 @@ pub mod panic_demo{
         Ok(username_second)
     }
 
-    // fn read_from_file_simpliest()->Result<String,io::Error>{
-    //     fs::read_to_string("hello_from_user.txt")?;
-    // }
+    fn read_from_file_simpliest()->Result<String,io::Error>{
+        Ok(fs::read_to_string("hello_from_user.txt")?)
+    }
 
     pub struct Guess{
         value:i32
@@ -83,7 +83,7 @@ pub mod panic_demo{
         read_from_file();
         read_from_file_shorter();
         create_only_vaid_guess();
-        //read_from_file_simpliest();
+        read_from_file_simpliest();
 
         let _hello_file_expect = std::fs::File::open("hello2.txt").expect("File should be available");
 
