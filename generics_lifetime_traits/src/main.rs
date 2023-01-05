@@ -3,6 +3,7 @@ mod generics_demo;
 mod tweet_summary;
 mod news_from_tg;
 mod traits_demo;
+mod lifetimes_demo;
 
 use traits_demo::{Summary,Notice};
 use news_from_tg::{TgNews};
@@ -37,6 +38,7 @@ where T:Summary , U:Notice + Summary
     second.summarize()
 }
 
+use lifetimes_demo::lifetime;
 
 fn main() {
     generics_demo::run_generics_demo();
@@ -78,4 +80,7 @@ fn main() {
     something_cool.whoami();
 
     println!("News from tg: {}",tg_news);
+
+    lifetime::run_demo();
+
 }
