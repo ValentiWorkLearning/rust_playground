@@ -20,16 +20,19 @@ pub fn _parse_config(args: &[String]) -> Config {
 }
 
 impl Config{
-    pub fn new(args: &[String])->Result<Config,&'static str>
+    pub fn new(mut args: impl Iterator<Item = String>)->Result<Config,&'static str>
     {
-        const ARGS_COUNT:usize = 3;
-        if args.len()<ARGS_COUNT {
-            return Err("Arguments count should be 2 - a command and a filepath")
-        }
+        args.next();
 
-        let query = &args[1];
-        let file_path = &args[2];
+        let query = match args.next() {
+            Some(arg)=>arg,
+            None=>return Err("Didn't get the query string")
+        };
 
+        let file_path = match args.next(){
+            Some(arg)=>arg,
+            None=>return Err("Didn't get the file path")
+        };
 
         let search_mode_env =
         match env::var("IGNORE_CASE").is_ok(){
@@ -68,25 +71,41 @@ pub fn run(config: &Config)->Result<(),Box<dyn Error>>{
 
 
 pub fn search<'a>(query: &str, contents: &'a str, search_strategy: SearchingMode)-> Vec<&'a str>{
-    let mut results = Vec::new();
 
-    for line in contents.lines(){
-        match search_strategy {
-            SearchingMode::CaseInsensitive=>{
-                let lowercase_query = query.to_lowercase();
-                if line.to_lowercase().contains(&lowercase_query){
-                    results.push(line);
+    let lowercase_query = query.to_lowercase();
+    //Modern implementation is:
+    contents.lines().filter(
+        |line|
+        {
+            match search_strategy {
+                SearchingMode::CaseInsensitive=>{
+                    line.to_lowercase().contains(&lowercase_query)
                 }
-            }
-            SearchingMode::CaseSensitive=>{
-                if line.contains(query){
-                    results.push(line);
+                SearchingMode::CaseSensitive=>{
+                    line.contains(&query)
                 }
             }
         }
-    }
+    ).collect()
 
-    results
+    //    let mut results = Vec::new();
+    // for line in contents.lines(){
+    //     match search_strategy {
+    //         SearchingMode::CaseInsensitive=>{
+    //             let lowercase_query = query.to_lowercase();
+    //             if line.to_lowercase().contains(&lowercase_query){
+    //                 results.push(line);
+    //             }
+    //         }
+    //         SearchingMode::CaseSensitive=>{
+    //             if line.contains(query){
+    //                 results.push(line);
+    //             }
+    //         }
+    //     }
+    // }
+
+    // results
 }
 
 #[cfg(test)]
