@@ -1,6 +1,9 @@
 trait State{
     fn request_review(self:Box<Self>)->Box<dyn State>;
     fn approve(self:Box<Self>)->Box<dyn State>;
+    fn content<'a>(&self,post:&'a Post)->String{
+        String::new()
+    }
 }
 
 struct Draft{}
@@ -34,6 +37,10 @@ impl State for Published{
     fn approve(self:Box<Self>)->Box<dyn State> {
         self
     }
+    fn content<'a>(&self,post:&'a Post)->String {
+        post.content.clone()
+    }
+
 }
 pub struct Post{
     state:Option<Box<dyn State>>,
@@ -53,7 +60,7 @@ impl Post{
     }
 
     pub fn content(&self)->String{
-        String::from("")
+        self.state.as_ref().unwrap().content(self)
     }
 
     pub fn request_review(&mut self){

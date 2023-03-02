@@ -1,5 +1,6 @@
 pub mod oop_sample;
 pub mod blog;
+pub mod blog_typed;
 use blog::Post;
 
 fn main() {
@@ -13,4 +14,14 @@ fn main() {
 
     let content = post.content();
     println!("post content is {content}");
+
+
+    let mut post_typed = blog_typed::Post::new();
+    
+    post_typed.add_text("I ate a salad for lunch today");
+    let post_typed = post_typed.request_review();
+    let post_typed = post_typed.approve();
+    
+    assert_eq!(post_typed.content(),"I ate a salad for lunch today")
 }
+
