@@ -17,6 +17,15 @@ enum List {
     Nil,
 }
 
+impl List {
+    fn tail(&self) -> Option<&RefCell<Rc<List>>> {
+        match self {
+            Cons(_, item) => Some(item),
+            Nil => None,
+        }
+    }
+}
+
 
 impl<'a,T> LimitTracker<'a,T> where T:Messnger
 {
