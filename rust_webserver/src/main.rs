@@ -36,12 +36,21 @@ fn main() {
     let pool = ThreadPool::new(4);
 
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
-    listener.incoming().for_each(|x|{
-        let stream = x.unwrap();
-        println!("Connection established!");
+    // listener.incoming().for_each(|x|{
+    //     let stream = x.unwrap();
+    //     println!("Connection established!");
+    //     pool.execute(|| {
+    //         handle_connection(stream);
+    //     });
+    // });
+    
+    for stream in listener.incoming().take(2) {
+        let stream = stream.unwrap();
+
         pool.execute(|| {
             handle_connection(stream);
         });
-    });
-    println!("Hello, world!");
+    }
+
+    println!("Shutting down.");
 }

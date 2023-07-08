@@ -2,12 +2,12 @@ use std::{sync::{mpsc,Arc,Mutex},thread};
 
 pub struct ThreadPool{
     workers:Vec<Worker>,
-    sender:mpsc::Sender<Job>,
+    sender:Option<mpsc::Sender<Job>>,
 }
 
 struct Worker{
     id:usize,
-    thread_handle: thread::JoinHandle<()>,
+    thread_handle: Option<thread::JoinHandle<()>>,
 }
 
 
@@ -19,14 +19,21 @@ impl Worker{
     pub fn new(worker_id:usize,receiver: Arc<Mutex<mpsc::Receiver<Job>>>)->Worker{
 
         let thread = thread::spawn(move || loop {
-            let job = receiver.lock().unwrap().recv().unwrap();
+            let message = receiver.lock().unwrap().recv();
 
-            println!("Worker {worker_id} got a job; executing.");
-
-            job();
+            match message{
+                Ok(job)=>{
+                    println!("Worker {worker_id} got a job; executing.");
+                    job()
+                }
+                Err(_)=>{
+                    println!("Worker {worker_id} disconnected; shutting down.");
+                    break;
+                }
+            }
         });
 
-        Worker { id: worker_id, thread_handle: thread}
+        Worker { id: worker_id, thread_handle: Some(thread)}
     }
 }
 impl ThreadPool{
@@ -50,7 +57,7 @@ impl ThreadPool{
             workers.push(Worker::new(id,Arc::clone(&receiver)));
         }
         
-        ThreadPool{workers,sender}
+        ThreadPool{workers,sender:Some(sender)}
     }
 
     pub fn execute<F>(&self, f: F)
@@ -59,19 +66,21 @@ impl ThreadPool{
     {
         let job = Box::new(f);
 
-        self.sender.send(job).unwrap();
+        self.sender.as_ref().unwrap().send(job).unwrap();
     }
 
 }
 
+impl Drop for ThreadPool{
+    fn drop(&mut self) {
+        drop(self.sender.take());
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+            if let Some(worker) = worker.thread_handle.take(){
+                worker.join().unwrap();
+            }
+            println!("Shutting down worker {} done!", worker.id);
+        }
     }
 }
